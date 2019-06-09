@@ -44,7 +44,7 @@ const App = () => {
             {country.languages.map(language => <li key={language.name}>
             {language.name}</li>)}
           </ul>
-          <img width="100px" src={country.flag}></img>
+          <img width="100px" src={country.flag} alt="lippu"/>
         </div>
       ));
     }
