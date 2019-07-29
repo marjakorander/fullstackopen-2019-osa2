@@ -1,12 +1,12 @@
 import React from "react";
 
-const Persons = ({ personsToShow, handleRemoval }) => {
+const Persons = ({ handleRemoval, persons }) => {
   const rows = () =>
-    personsToShow.map(person => (
-      <p key={person.id}>
+    persons.map(person => (
+      <div key={person.name}>
         {person.name} {person.number}
         <button onClick={() => handleRemoval(person.id, person.name)}>Poista</button>
-      </p>
+      </div>
     ));
 
   return (
