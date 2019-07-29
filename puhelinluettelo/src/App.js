@@ -6,66 +6,62 @@ import personService from "./Services/persons";
 import Notification from "./Components/Notification";
 import "./index.css";
 
+
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [newFilter, setNewFilter] = useState("");
-  const [showAll] = useState("");
   const [notificationMessage, setNotificationMessage] = useState(null);
 
   useEffect(() => {
-    console.log("effect");
-    personService.getAll().then(response => {
-      setPersons(response.data);
-    });
-  }, []);
-  console.log("render", persons.length, "persons");
+    personService.getAll()
+      .then(response => {
+      setPersons(response);
+    })
+  }, [])
 
-  const personsToShow = showAll
-    ? persons
-    : persons.filter(person =>
-        person.name.toUpperCase().includes(newFilter.toUpperCase())
-      );
+  console.log('Persons', persons.length)
+
+  const personsToShow = newFilter.length === 0
+      ? persons
+      : persons.filter(p => p.name.toLowerCase().includes(newFilter.toLowerCase()))
 
   const addNameAndNumber = event => {
     event.preventDefault();
-    const nameObject = {
-      name: newName,
-      number: newNumber
-    };
-    if (persons.some(person => person.name === newName)) {
-      const samePerson = persons.find(p => p.name === newName);
-      const changedPerson = { ...samePerson, number: newNumber };
 
+    const existingPerson = persons.find(p => p.name === newName)
+    if (existingPerson) {
       personService
-        .update(changedPerson)
-        .then(returnedPerson => {
-          setPersons(
-            persons.map(person =>
-              person.name !== newName ? person : returnedPerson
-            )
-          );
-          setNotificationMessage(
-            `${newName} on jo luettelossa, puhelinnumero muutettu`
-          );
+        .update({
+          ...existingPerson,
+          number: newNumber
+        })
+        .then(updatedPerson => {
+          setPersons(persons.map(person => person.name === newName ? updatedPerson : person));
+          setNotificationMessage(`${newName} on jo luettelossa, puhelinnumero muutettu`);
           console.log("Updated person");
           setTimeout(() => {
             setNotificationMessage(null);
           }, 5000);
         })
         .catch(error => {
-          alert(`henkilö ${changedPerson.name} on jo poistettu palvelimelta`);
-          setPersons(persons.filter(p => p.name !== changedPerson.name));
+          alert(`henkilö ${newName} on jo poistettu palvelimelta`);
+          setPersons(persons.filter(p => p.name !== newName));
         });
       setNewName("");
       setNewNumber("");
     } else {
-      personService.create(nameObject).then(response => {
-        setPersons(persons.concat(response.data));
+      personService
+        .create({
+          name: newName,
+          number: newNumber
+        })
+        .then(response => {
+        setPersons(persons.concat(response));
       });
       setNotificationMessage(`${newName} lisätty luetteloon`);
-      console.log("Added person");
+      console.log("Added person:", `${newName}, ${newNumber}`);
       setTimeout(() => {
         setNotificationMessage(null);
       }, 5000);
@@ -111,9 +107,9 @@ const App = () => {
         addNameAndNumber={addNameAndNumber}
       />
       <Filter newFilter={newFilter} handleFilterChange={handleFilterChange} />
-      <Persons personsToShow={personsToShow} handleRemoval={handleRemoval} />
+      <Persons persons={personsToShow} handleRemoval={handleRemoval} />
     </div>
   );
 };
 
-export default App;
+export default App
